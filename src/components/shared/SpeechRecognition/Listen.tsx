@@ -17,7 +17,7 @@ const Listen: FC<ListenProps> = ({className = ""}) => {
         resetTranscript,
         browserSupportsSpeechRecognition
     } = useSpeechRecognition();
-    const startListening = () => SpeechRecognition.startListening({language: 'tr'});
+    const startListening = () => SpeechRecognition.startListening({language: 'tr', continuous:true});
 
     useEffect(() => {
         setSpeechRecognitionSupported(browserSupportsSpeechRecognition)
