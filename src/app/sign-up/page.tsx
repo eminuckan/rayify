@@ -23,9 +23,9 @@ export default function Login ()
                 <Stack spacing="6" textAlign="center" className="flex items-center justify-center">
                     <Logo />
                     <Stack spacing={{ base: '2', md: '3' }} textAlign="center">
-                        <Heading size={{ base: 'xs', md: 'sm' }}>Hesabına giriş yap</Heading>
+                        <Heading size={{ base: 'xs', md: 'sm' }}>Hemen üye ol</Heading>
                         <Text color="fg.muted">
-                            Hesabın yok mu ? <Link href="/sign-up" className="text-blue-500 font-semibold">Üye ol</Link>
+                            Hesabın var mı ? <Link href="/login" className="text-blue-500 font-semibold">Giriş yap</Link>
                         </Text>
                     </Stack>
                 </Stack>
@@ -44,14 +44,8 @@ export default function Login ()
                             </FormControl>
                             <PasswordField />
                         </Stack>
-                        <HStack justify="space-between">
-                            <Checkbox defaultChecked>Beni hatırla</Checkbox>
-                            <Button variant="text" size="sm">
-                                Parolanızı mı unuttunuz ?
-                            </Button>
-                        </HStack>
                         <Stack spacing="6">
-                            <Button colorScheme='blue' variant="solid">Giriş yap</Button>
+                            <Button colorScheme='blue' variant="solid">Üye ol</Button>
                         </Stack>
                     </Stack>
                 </Box>
