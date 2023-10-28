@@ -1,9 +1,13 @@
+"use client"
+import 'regenerator-runtime'
+import {useEffect, useState, useRef} from "react";
+import {createUtter} from "../../utils/utter";
+
 import {
     Box,
     Button,
     Checkbox,
     Container,
-    Divider,
     FormControl,
     FormLabel,
     Heading,
@@ -15,8 +19,57 @@ import {
 } from '@chakra-ui/react'
 import Logo from '../../components/shared/Logo/Logo';
 import PasswordField from "components/components/shared/Form/Input/PasswordInput";
+import SpeechRecognition, {useSpeechRecognition} from "react-speech-recognition"
 export default function Login ()
 {
+
+    // const [cmd,setCmd] = useState<string | null>('');
+    const usernameInputRef = useRef<HTMLInputElement>(null);
+    const passwordInputRef = useRef<HTMLInputElement>(null);
+    const [speechRecognitionSupported, setSpeechRecognitionSupported] =
+        useState(false)
+    const [message, setMessage] = useState<string>("Merhaba bu ilk komut");
+
+    const {
+        transcript,
+        listening,
+        resetTranscript,
+        browserSupportsSpeechRecognition
+    } = useSpeechRecognition();
+
+    const speakText = () =>{
+        const {synth, utter} = createUtter(287);
+        utter.text = message;
+        synth.speak(utter);
+    }
+
+    useEffect(() => {
+        setSpeechRecognitionSupported(browserSupportsSpeechRecognition)
+    }, [browserSupportsSpeechRecognition])
+
+    useEffect(() => {
+        speakText();
+    }, [message]);
+    const startListening = () => speechRecognitionSupported ? SpeechRecognition.startListening({language: 'tr', continuous:false}) : false;
+
+    useEffect(() => {
+        startListening();
+        console.log(transcript);
+        switch (transcript.trim().toLowerCase()) {
+            case "tekrar":
+                setMessage("ilk komut");
+
+                break;
+            case "parola":
+                setMessage("ikinci komut");
+                break;
+            default:
+                break;
+        }
+    });
+
+
+
     return (
         <Container maxW="lg" py={{ base: '12', md: '24' }} px={{ base: '0', sm: '8' }}>
             <Stack spacing="8">
@@ -40,9 +93,9 @@ export default function Login ()
                         <Stack spacing="5">
                             <FormControl>
                                 <FormLabel htmlFor="username">Kullanıcı adı</FormLabel>
-                                <Input id="username" type="text" />
+                                <Input ref={usernameInputRef} id="username" type="text" />
                             </FormControl>
-                            <PasswordField />
+                            <PasswordField ref={passwordInputRef} />
                         </Stack>
                         <HStack justify="space-between">
                             <Checkbox defaultChecked>Beni hatırla</Checkbox>

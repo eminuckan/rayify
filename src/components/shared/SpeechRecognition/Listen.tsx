@@ -1,5 +1,6 @@
 "use client"
 import 'regenerator-runtime'
+
 import {FC, useEffect, useState} from "react";
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 
