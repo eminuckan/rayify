@@ -3,6 +3,7 @@ import {Inter} from 'next/font/google'
 import '../styles/app.css'
 import {Providers} from "components/app/provider";
 
+
 const inter = Inter({subsets: ['latin']})
 
 export const metadata: Metadata = {
