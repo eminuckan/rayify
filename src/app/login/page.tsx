@@ -1,6 +1,8 @@
 "use client"
 import 'regenerator-runtime'
-import {useEffect, useState, useCallback} from "react";
+import {useEffect, useState, useRef} from "react";
+import {createUtter} from "../../utils/utter";
+
 import {
     Box,
     Button,
@@ -17,16 +19,16 @@ import {
 } from '@chakra-ui/react'
 import Logo from '../../components/shared/Logo/Logo';
 import PasswordField from "components/components/shared/Form/Input/PasswordInput";
-import {useSpeechSynthesisApi} from "../../hooks/useSpeechSynthesisApi";
 import SpeechRecognition, {useSpeechRecognition} from "react-speech-recognition"
-
 export default function Login ()
 {
 
-    const [cmd,setCmd] = useState<string | null>('');
-
+    // const [cmd,setCmd] = useState<string | null>('');
+    const usernameInputRef = useRef<HTMLInputElement>(null);
+    const passwordInputRef = useRef<HTMLInputElement>(null);
     const [speechRecognitionSupported, setSpeechRecognitionSupported] =
         useState(false)
+    const [message, setMessage] = useState<string>("Merhaba bu ilk komut");
 
     const {
         transcript,
@@ -35,45 +37,41 @@ export default function Login ()
         browserSupportsSpeechRecognition
     } = useSpeechRecognition();
 
+    const speakText = () =>{
+        const {synth, utter} = createUtter(287);
+        utter.text = message;
+        synth.speak(utter);
+    }
+
     useEffect(() => {
         setSpeechRecognitionSupported(browserSupportsSpeechRecognition)
     }, [browserSupportsSpeechRecognition])
 
-    const startListening = () => SpeechRecognition.startListening({language: 'tr', continuous:false});
-    const {
-        text,
-        setText,
-        isSpeaking,
-        isPaused,
-        isResumed,
-        isEnded,
-        speak,
-        pause,
-        resume,
-        cancel
-    } = useSpeechSynthesisApi();
     useEffect(() => {
-        setText("Merhaba, kullanıcı adınızı girip ardından Parola diyerek parolanızı girebilirsiniz.");
-    }, []);
-    useEffect(() => {
-        speak();
-        resetTranscript();
-    },[text])
-
+        speakText();
+    }, [message]);
+    const startListening = () => speechRecognitionSupported ? SpeechRecognition.startListening({language: 'tr', continuous:false}) : false;
 
     useEffect(() => {
         startListening();
         console.log(transcript);
+        switch (transcript.trim().toLowerCase()) {
+            case "tekrar":
+                setMessage("ilk komut");
+
+                break;
+            case "parola":
+                setMessage("ikinci komut");
+                break;
+            default:
+                break;
+        }
     });
+
 
 
     return (
         <Container maxW="lg" py={{ base: '12', md: '24' }} px={{ base: '0', sm: '8' }}>
-            <Stack>
-                <Button onClick={speak}>Speak</Button>
-                <Button onClick={cancel}>Cancel</Button>
-                <Button onClick={() => console.log(isSpeaking)}>Log state value</Button>
-            </Stack>
             <Stack spacing="8">
                 <Stack spacing="6" textAlign="center" className="flex items-center justify-center">
                     <Logo />
@@ -95,9 +93,9 @@ export default function Login ()
                         <Stack spacing="5">
                             <FormControl>
                                 <FormLabel htmlFor="username">Kullanıcı adı</FormLabel>
-                                <Input id="username" type="text" />
+                                <Input ref={usernameInputRef} id="username" type="text" />
                             </FormControl>
-                            <PasswordField />
+                            <PasswordField ref={passwordInputRef} />
                         </Stack>
                         <HStack justify="space-between">
                             <Checkbox defaultChecked>Beni hatırla</Checkbox>
