@@ -20,15 +20,19 @@ import {
 import Logo from '../../components/shared/Logo/Logo';
 import PasswordField from "components/components/shared/Form/Input/PasswordInput";
 import SpeechRecognition, {useSpeechRecognition} from "react-speech-recognition"
+import {redirect} from "next/navigation";
 export default function Login ()
 {
-
+    const messages = [
+        "Kullanıcı adınızı yazın, ardından parola diyerek parolanızı girebilirsiniz. Üye olmak için üye diyebilirsiniz. Bilgileri tekrar dinlemek için, tekrar diyebilirsiniz. ",
+        "Parolanızı yazın ardından enter ile giriş yapın. Kullanıcı adını düzenlemek için kullanıcı diyebilirsiniz."
+    ];
     // const [cmd,setCmd] = useState<string | null>('');
     const usernameInputRef = useRef<HTMLInputElement>(null);
     const passwordInputRef = useRef<HTMLInputElement>(null);
     const [speechRecognitionSupported, setSpeechRecognitionSupported] =
         useState(false)
-    const [message, setMessage] = useState<string>("Merhaba bu ilk komut");
+    const [message, setMessage] = useState<string>(messages[0]);
 
     const {
         transcript,
@@ -38,7 +42,7 @@ export default function Login ()
     } = useSpeechRecognition();
 
     const speakText = () =>{
-        const {synth, utter} = createUtter(287);
+        const {synth, utter} = createUtter();
         utter.text = message;
         synth.speak(utter);
     }
@@ -49,26 +53,34 @@ export default function Login ()
 
     useEffect(() => {
         speakText();
+        resetTranscript();
     }, [message]);
     const startListening = () => speechRecognitionSupported ? SpeechRecognition.startListening({language: 'tr', continuous:false}) : false;
 
     useEffect(() => {
+        usernameInputRef.current?.focus();
+        console.log(usernameInputRef.current?.value);
+    }, []);
+
+    useEffect(() => {
         startListening();
-        console.log(transcript);
         switch (transcript.trim().toLowerCase()) {
             case "tekrar":
-                setMessage("ilk komut");
-
+                speakText();
                 break;
             case "parola":
-                setMessage("ikinci komut");
+                passwordInputRef.current?.focus();
+                setMessage(messages[1]);
                 break;
+            case "kullanıcı":
+                usernameInputRef.current?.focus();
+                setMessage(messages[0]);
+            case "üye":
+                redirect("/sign-up")
             default:
                 break;
         }
     });
-
-
 
     return (
         <Container maxW="lg" py={{ base: '12', md: '24' }} px={{ base: '0', sm: '8' }}>
