@@ -75,8 +75,10 @@ export default function Login ()
             case "kullanıcı":
                 usernameInputRef.current?.focus();
                 setMessage(messages[0]);
+                break;
             case "üye":
                 redirect("/sign-up")
+                break;
             default:
                 break;
         }
