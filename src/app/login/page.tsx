@@ -1,8 +1,6 @@
 "use client"
 import 'regenerator-runtime'
 import {useEffect, useState, useRef, FormEvent} from "react";
-import {createUtter} from "../../utils/utter";
-
 import {
     Box,
     Button,
@@ -19,6 +17,7 @@ import Logo from '../../components/shared/Logo/Logo';
 import PasswordField from "components/components/shared/Form/Input/PasswordInput";
 import SpeechRecognition, {useSpeechRecognition} from "react-speech-recognition"
 import {redirect,useRouter} from "next/navigation";
+import {speakText} from "../../utils/utter";
 export default function Login ()
 {
     const router = useRouter();
@@ -39,24 +38,17 @@ export default function Login ()
         browserSupportsSpeechRecognition
     } = useSpeechRecognition();
 
-    const speakText = () =>{
-        const {synth, utter} = createUtter();
-        utter.text = message;
-        synth.cancel();
-        synth.speak(utter);
-        resetTranscript();
-    }
-
     useEffect(() => {
         setSpeechRecognitionSupported(browserSupportsSpeechRecognition)
     }, [browserSupportsSpeechRecognition])
 
     useEffect(() => {
-        speakText();
+        speakText(message);
     }, [message]);
     const startListening = () => speechRecognitionSupported ? SpeechRecognition.startListening({language: 'tr', continuous:false}) : false;
 
     useEffect(() => {
+        speakText(message);
         usernameInputRef.current?.focus();
     }, []);
 
@@ -64,7 +56,7 @@ export default function Login ()
         startListening();
         switch (transcript.trim().toLowerCase()) {
             case "tekrar":
-                speakText();
+                speakText(message);
                 break;
             case "parola":
                 passwordInputRef.current?.focus();
@@ -76,7 +68,6 @@ export default function Login ()
                 break;
             case "üye":
                 redirect("/sign-up")
-                break;
             default:
                 break;
         }
