@@ -23,7 +23,7 @@ export default function Login ()
 {
     const router = useRouter();
     const messages = [
-        "Kullanıcı adınızı yazın, ardından parola diyerek parolanızı girebilirsiniz. Üye olmak için üye diyebilirsiniz. Bilgileri tekrar dinlemek için, tekrar diyebilirsiniz.",
+        "Kullanıcı adınızı yazın, ardından parola diyerek parolanızı girebilirsiniz. Yeni üye olmak için üye diyebilirsiniz. Bilgileri tekrar dinlemek için, tekrar diyebilirsiniz.",
         "Parolanızı yazın ardından enter ile giriş yapın. Kullanıcı adını düzenlemek için kullanıcı diyebilirsiniz."
     ];
     // const [cmd,setCmd] = useState<string | null>('');
