@@ -18,6 +18,8 @@ import PasswordField from "components/components/shared/Form/Input/PasswordInput
 import SpeechRecognition, {useSpeechRecognition} from "react-speech-recognition"
 import {redirect,useRouter} from "next/navigation";
 import {speakText} from "../../utils/utter";
+import {login} from '../../utils/auth';
+
 export default function Login ()
 {
     const router = useRouter();
@@ -29,9 +31,8 @@ export default function Login ()
     const usernameInputRef = useRef<HTMLInputElement>(null);
     const passwordInputRef = useRef<HTMLInputElement>(null);
     const [speechRecognitionSupported, setSpeechRecognitionSupported] =
-        useState(false) // nextjs varsayılan olarak ssr yaptığı için window öğesine useEffeck hooku içinde erişebiliyoruz bu yüzden tarayıcı desteğini bu state'e atayıp direkt olarak window öğesi üzerinden işlem yapmak yerine state üzerinden işlem yapıyoruz.
+        useState(false) // nextjs varsayılan olarak ssr yaptığı için window öğesine useEffect hooku içinde erişebiliyoruz bu yüzden tarayıcı desteğini bu state'e atayıp direkt olarak window öğesi üzerinden işlem yapmak yerine state üzerinden işlem yapıyoruz.
     const [message, setMessage] = useState<string>(messages[0]);
-
     const {
         transcript,
         resetTranscript,
@@ -73,11 +74,17 @@ export default function Login ()
         }
     });
 
-    const handleLogin = (e: FormEvent<HTMLFormElement>) => {
+    const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setMessage("Başarılı bir şekilde giriş yaptınız, ana sayfaya yönlendiriliyorsunuz.");
-        router.push("/")
-        //backende api call yapılacak.
+        const res = await login("aaaa","1213123");
+        if (res.token){
+            console.log(res.token)
+            setMessage("Başarılı bir şekilde giriş yapt<ınız, ana sayfaya yönlendiriliyorsunuz.");
+            router.push("/")
+        }else{
+            console.log(res.message);
+        }
+
     }
 
     return (
