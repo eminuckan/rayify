@@ -16,7 +16,7 @@ import Logo from '../../components/shared/Logo/Logo';
 import PasswordField from "components/components/shared/Form/Input/PasswordInput";
 import {useEffect, useState, useRef, FormEvent} from "react";
 import SpeechRecognition, {useSpeechRecognition} from "react-speech-recognition";
-import {createUtter} from "../../utils/utter";
+import {speakText} from "../../utils/utter";
 import {useRouter} from "next/navigation";
 
 export default function Login ()
@@ -37,19 +37,12 @@ export default function Login ()
         browserSupportsSpeechRecognition
     } = useSpeechRecognition();
 
-    const speakText = () =>{
-        const {synth, utter} = createUtter();
-        utter.text = message;
-        synth.cancel();
-        synth.speak(utter);
-    }
-
     useEffect(() => {
         setSpeechRecognitionSupported(browserSupportsSpeechRecognition)
     }, [browserSupportsSpeechRecognition])
 
     useEffect(() => {
-        speakText();
+        speakText(message);
         resetTranscript();
     }, [message]);
     const startListening = () => speechRecognitionSupported ? SpeechRecognition.startListening({language: 'tr', continuous:false}) : false;
@@ -62,7 +55,7 @@ export default function Login ()
         startListening();
         switch (transcript.trim().toLowerCase()) {
             case "tekrar":
-                speakText();
+                speakText(message);
                 break;
             case "parola":
                 passwordInputRef.current?.focus();
