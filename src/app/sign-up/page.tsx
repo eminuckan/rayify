@@ -18,6 +18,8 @@ import {useEffect, useState, useRef, FormEvent} from "react";
 import SpeechRecognition, {useSpeechRecognition} from "react-speech-recognition";
 import {speakText} from "../../utils/utter";
 import {useRouter} from "next/navigation";
+import {login, register} from "../../utils/auth";
+import {setCookie} from "cookies-next";
 
 export default function Login ()
 {
@@ -29,6 +31,7 @@ export default function Login ()
     const [speechRecognitionSupported, setSpeechRecognitionSupported] =
         useState(false);
     const [message, setMessage] = useState<string>(messages[0]);
+    const [registerAttempt, setRegisterAttempt] = useState<number>(1);
     const usernameInputRef = useRef<HTMLInputElement>(null);
     const passwordInputRef = useRef<HTMLInputElement>(null);
     const {
@@ -70,10 +73,19 @@ export default function Login ()
         }
     });
 
-    const handleRegister = (e: FormEvent<HTMLFormElement>) => {
+    const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setMessage("Başarılı bir şekilde kayıt yaptınız, ana sayfaya yönlendiriliyorsunuz.")
-        router.push("/");
+        const data = await register(usernameInputRef.current?.value,passwordInputRef.current?.value);
+        if (data.succeeded){
+            const data = await login(usernameInputRef.current?.value,passwordInputRef.current?.value);
+            setCookie('accessToken',data.token.accessToken);
+            setMessage("Başarılı bir şekilde kayıt oldunuz, ana sayfaya yönlendiriliyorsunuz");
+            router.push("/");
+        }else{
+            setRegisterAttempt(registerAttempt+1);
+            console.log(data.message);
+            setMessage("Lütfen bilgilerinizi kontrol edip tekrar deneyin.");
+        }
         //back ende api call yapılacak
     }
 

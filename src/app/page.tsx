@@ -5,7 +5,12 @@ import {
     Text,
     Stack,
 } from '@chakra-ui/react'
+import {cookies} from "next/headers";
+import {parseJWT} from "../utils/auth";
+
 export default function Home() {
+    const token = cookies().get("accessToken");
+    const decoded = parseJWT(token?.value);
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
         <>
@@ -21,7 +26,7 @@ export default function Home() {
                         lineHeight={'110%'}>
                         Rayify <br />
                         <Text as={'span'} color={'green.400'}>
-                            Engelsiz Müzik
+                            Engelsiz Müzik <br /> Kullanıcı:  {decoded.username}
                         </Text>
                     </Heading>
                 </Stack>

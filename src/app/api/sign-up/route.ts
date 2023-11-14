@@ -10,7 +10,7 @@ export async function POST(request: Request) {
         })
     });
 
-    const res = await instance.post('https://localhost:7072/api/User/login', {
+    const res = await instance.post('https://localhost:7072/api/User', {
         username: username,
         password: password
     });

@@ -18,7 +18,9 @@ import PasswordField from "components/components/shared/Form/Input/PasswordInput
 import SpeechRecognition, {useSpeechRecognition} from "react-speech-recognition"
 import {redirect,useRouter} from "next/navigation";
 import {speakText} from "../../utils/utter";
-import {login} from '../../utils/auth';
+import {login, parseJWT} from '../../utils/auth';
+import { setCookie } from 'cookies-next';
+import {cookies} from "next/headers";
 
 export default function Login ()
 {
@@ -33,6 +35,7 @@ export default function Login ()
     const [speechRecognitionSupported, setSpeechRecognitionSupported] =
         useState(false) // nextjs varsayılan olarak ssr yaptığı için window öğesine useEffect hooku içinde erişebiliyoruz bu yüzden tarayıcı desteğini bu state'e atayıp direkt olarak window öğesi üzerinden işlem yapmak yerine state üzerinden işlem yapıyoruz.
     const [message, setMessage] = useState<string>(messages[0]);
+    const [loginAttempt, setLoginAttempt] = useState<number>(1);
     const {
         transcript,
         resetTranscript,
@@ -52,6 +55,10 @@ export default function Login ()
         speakText(message);
         usernameInputRef.current?.focus();
     }, []);
+
+    useEffect(() => {
+        speakText(message)
+    }, [loginAttempt]);
 
     useEffect(() => {
         startListening();
@@ -74,17 +81,22 @@ export default function Login ()
         }
     });
 
+
+
     const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const res = await login("aaaa","1213123");
-        if (res.token){
-            console.log(res.token)
-            setMessage("Başarılı bir şekilde giriş yapt<ınız, ana sayfaya yönlendiriliyorsunuz.");
-            router.push("/")
+        const data = await login(usernameInputRef.current?.value,usernameInputRef.current?.value);
+        if (data.token.accessToken === undefined){
+            setLoginAttempt( loginAttempt + 1);
+            setMessage("Kullanıcı adı veya şifre hatalı")
         }else{
-            console.log(res.message);
-        }
+            const token = data.token.accessToken;
+            const decoded = parseJWT(token);
+            setMessage(`Başarılı bir şekilde giriş yaptınız ${decoded.username}, ana sayfaya yönlendiriliyorsunuz.`)
+            setCookie('accessToken',data.token.accessToken);
 
+            router.push("/")
+        }
     }
 
     return (
