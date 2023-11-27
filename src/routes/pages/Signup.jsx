@@ -29,6 +29,11 @@ export default function Signup(){
         usernameInputRef.current.focus();
     },[])
 
+    useEffect(() => {
+        stop()
+        play()
+    }, [listening]);
+
     useEffect(()=> {
         startSynthesis();
     },[message])
@@ -44,22 +49,22 @@ export default function Signup(){
             setMessage("Parolanızı söyleyin veya klavyeden giriş yapın, ardından enter ile kayıt olabilirsiniz.")
         }else if (e.key === "ArrowUp"){
             usernameInputRef.current.focus();
-            setMessage("Kullanıcı adınızı yazın. Shift tuşuna basılı tutarak sesli giriş yapabilirsiniz.")
+            setMessage("Kullanıcı adınızı yazın. Ctrl tuşuna basılı tutarak sesli giriş yapabilirsiniz.")
         }else if (e.key === "ArrowRight"){
             navigate("/login");
-        }else if (e.key === "Shift"){
+        }else if (e.key === "Control"){
+            if (e.repeat) return;
             stopSynthesis();
-            stop();
-            play();
             SpeechRecognition.startListening({language: "tr", continuous: false});
         }
     }
 
+
     const handleKeyUp = (e) => {
-        if (e.key === "Shift"){
-            SpeechRecognition.stopListening();
+        if (e.key === "Control"){
             if (document.activeElement === usernameInputRef.current || document.activeElement === passwordInputRef.current){
                 document.activeElement.value = transcript;
+                SpeechRecognition.stopListening();
                 resetTranscript();
             }
 
@@ -94,7 +99,6 @@ export default function Signup(){
                                 <Button type="submit" width="100%" colorScheme='teal'>Kayıt Ol</Button>
                             </Box>
                         </Flex>
-
                     </Form>
                 </Center>
             </Flex>
