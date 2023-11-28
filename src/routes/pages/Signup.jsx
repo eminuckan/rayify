@@ -5,13 +5,30 @@ import {
     Input,
     Divider, Button, Box
 } from '@chakra-ui/react'
-import {Link as RouterLink, Form , useNavigate} from 'react-router-dom';
+import {Link as RouterLink, Form, useNavigate, useActionData} from 'react-router-dom';
 import {useEffect, useRef} from "react";
 import useSpeechSynthesis from "../../hooks/useSpeechSynthesis.jsx";
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import useSound from 'use-sound';
 import startSound from "../../assets/sounds/start.mp3";
+import axios from "axios";
+
+
+export async function action({request}){
+ const formData = await request.formData();
+ const response = await axios.post('https://localhost:7072/api/User',{
+     Username: formData.get("username"),
+     Password: formData.get("password")
+ }).then(function (response){
+     return response;
+ }).catch(function (error){
+     return error
+ })
+    return response;
+
+}
 export default function Signup(){
+    const signUpState = useActionData();
     const {startSynthesis,setMessage,message,stopSynthesis} = useSpeechSynthesis("Kayıt ekranındasınız. Üye iseniz sağ ok tuşuna basın. Üye değilseniz yukarı ok tuşuna basın.");
     const usernameInputRef = useRef();
     const passwordInputRef = useRef();
@@ -28,6 +45,25 @@ export default function Signup(){
     useEffect(()=> {
         usernameInputRef.current.focus();
     },[])
+
+    useEffect(()=> {
+        if (signUpState){
+            if (signUpState.data.succeeded){
+                setMessage("Kayıt işlemi başarılı, giriş sayfasına yönlendiriliyorsunuz.");
+                setTimeout(()=> {
+                        navigate("/login");
+                    }
+                    ,4000);
+
+            }else{
+                if (signUpState.data.message.match(/.*(?= - )/gm)[0] === "PasswordTooShort"){
+                    setMessage("Parolanız minimum 6 karakter olmalı. Alt ok tuşuna basarak parolanızı düzenleyin.");
+                }else if(signUpState.data.message.match(/.*(?= - )/gm)[0] === "DuplicateUserName"){
+                    setMessage("Kullanıcı adı mevcut, üst ok tuşuna basarak tekrar girin.");
+                }
+            }
+        }
+    },[signUpState])
 
     useEffect(() => {
         stop()
@@ -64,10 +100,9 @@ export default function Signup(){
         if (e.key === "Control"){
             if (document.activeElement === usernameInputRef.current || document.activeElement === passwordInputRef.current){
                 document.activeElement.value = transcript;
-                SpeechRecognition.stopListening();
                 resetTranscript();
             }
-
+            SpeechRecognition.stopListening();
         }
     }
 

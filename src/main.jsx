@@ -14,50 +14,31 @@ import Login from "./routes/pages/Login.jsx";
 import Signup from "./routes/pages/Signup.jsx";
 import Home from "./routes/pages/Home.jsx";
 import Root from "./routes/Root.jsx";
-
+import {action as signUpAction} from './routes/pages/Signup.jsx';
+import {action as loginAction} from './routes/pages/Login.jsx';
+import {loader as homeLoader} from './routes/pages/Home.jsx';
 const router = createBrowserRouter([
-    // {
-    //     path: "/",
-    //     element: <Root />,
-    //     errorElement: <ErrorPage />,
-    //     loader: rootLoader,
-    //     action: rootAction,
-    //     children: [
-    //         {
-    //             path: "contacts/:contactId",
-    //             element: <Contact />,
-    //             loader: contactLoader
-    //         },
-    //         {
-    //             path: "contacts/:contactId/edit",
-    //             element: <EditContact />,
-    //             loader: contactLoader,
-    //             action: editAction
-    //         },
-    //         {
-    //             path: "contacts/:contactId/destroy",
-    //             action: destroyAction
-    //         }
-    //     ]
-    // },
-    //
+
     {
        path:"/",
        element:<Root />,
         children: [
             {
                 index: true,
-                element: <Home />
+                element: <Home />,
+                loader: homeLoader
             }
         ]
     },
     {
         path: "/login",
-        element: <Login />
+        element: <Login />,
+        action: loginAction
     },
     {
         path: "/sign-up",
-        element: <Signup />
+        element: <Signup />,
+        action: signUpAction
     },
 
 
