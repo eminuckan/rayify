@@ -5,13 +5,29 @@ import {
     Input,
     Divider, Button, Box
 } from '@chakra-ui/react'
-import {Link as RouterLink, Form , useNavigate} from 'react-router-dom';
+import {Link as RouterLink, Form, useNavigate, useActionData} from 'react-router-dom';
 import {useEffect, useRef} from "react";
 import useSpeechSynthesis from "../../hooks/useSpeechSynthesis.jsx";
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import useSound from 'use-sound';
 import startSound from "../../assets/sounds/start.mp3";
+import axios from "axios";
+import {useCookies} from "react-cookie";
+
+export async function action({request}){
+    const formData = await request.formData();
+    const response = await axios.post('https://localhost:7072/api/User/Login',{
+        Username: formData.get("username"),
+        Password: formData.get("password")
+    }).then(function (response){
+        return response;
+    }).catch(function (error){
+        return error
+    })
+    return response;
+}
 export default function Login(){
+    const loginState = useActionData();
     const {startSynthesis,setMessage,message,stopSynthesis} = useSpeechSynthesis("Giriş ekranındasınız. Üye değilseniz sağ ok tuşuna basın. Üye iseniz yukarı ok tuşuna basın.");
     const usernameInputRef = useRef();
     const passwordInputRef = useRef();
@@ -25,6 +41,22 @@ export default function Login(){
         browserSupportsSpeechRecognition
     } = useSpeechRecognition();
 
+    const [cookies, setCookie] = useCookies(['authToken','tokenExpire']);
+    useEffect(() => {
+        if (loginState){
+            if (loginState.data.token){
+                setMessage("Başarılı bir şekilde giriş yaptınız, ana sayfaya yönlendiriliyorsunuz.");
+                setCookie('authToken',loginState.data.token.accessToken);
+                setCookie('tokenExpire', loginState.data.token.expiration);
+                setTimeout(()=> {
+                        navigate("/")
+                    }
+                    ,4000);
+            }else{
+                setMessage("Giriş bilgileriniz hatalı, üst ok tuşu ile kullanıcı adını, alt ok tuşu ile parolanızı yeniden girebilirsiniz.")
+            }
+        }
+    }, [loginState]);
     useEffect(()=> {
         usernameInputRef.current.focus();
     },[])
