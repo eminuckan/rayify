@@ -25,12 +25,14 @@ const Home = () => {
     const [isPlayed, setIsPlayed] = useState(false);
     const [play,{stop, pause}] = useSound([music1,music2,music3]);
     const songList =[{musicName:'İllede sen', musicPath:music1},{musicName:'Bambaşka Yollara', musicPath:music2},{musicName:'Müphem', musicPath:music3},{musicName:'Yakışıklı', musicPath:music4}]
+    const x = document.getElementById("sP");
     useEffect(()=> {
         startSynthesis();
     },[message])
     const handleKeyDown = (e) => {
         if (e.code ==="KeyH") {
             setMessage("Sağ ve sol ok tuşlarıyla şarkının süresini değiştirebilirisiniz, yukarı ve aşağı ok tuşuyla listenizdeki diğer şarkılara geçebilirsiniz")
+
         }
     };
     useEffect(()=> {
@@ -50,6 +52,23 @@ const Home = () => {
 
     };
 
+    const pauseButton = () =>
+    {
+        setIsPlayed(!isPlayed)
+        if(isPlayed === true)
+        {
+            play();
+            x.textContent = "Pause";
+
+        }
+        else
+        {
+            pause();
+
+           x.textContent = "Play";
+
+        };
+    }
     return (
         <Container h="100vh" maxW="container.2xl"  className="box-border">
             <Grid templateColumns='repeat(3, 1fr)' gap={3} pt='5' >
@@ -87,8 +106,8 @@ const Home = () => {
                                 Previous Music
                             </Button>
                             <Spacer />
-                            <Button w='5rem'>
-                                Pause
+                            <Button onClick={pauseButton} w='5rem'>
+                                <p id="sP">Pause</p>
                             </Button>
                             <Spacer />
                             <Button w='10rem'>
@@ -100,12 +119,13 @@ const Home = () => {
                 <GridItem className="h-[calc(100vh-2em)]" colSpan={2} w='100%' bg='white' border='1px solid grey' borderRadius='4'>
                     <UnorderedList styleType='none'>
 
-                        {songList.map(song => {
+                        {songList.map(song=> {
                             return (
                                 <ListItem w='100%' onClick={() => playSong(song)}><Flex w='100%' cursor='pointer' justifyContent='flex-start' mt='5' h='120' alignItems='center'><Image borderRadius='5' w='200' h='110' objectFit="cover" mt='-1px' boxShadow='dark-lg'  src='https://i.ytimg.com/vi/C2tQrIHSXho/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCbR8sRCp1J_R4S_U2upByaU9PdUw'></Image><Text mt='-1' display='block' color='Black' fontSize='30' ml='10'>Mabel Matiz - Müphem</Text>
                                 </Flex><Box h='100%' w='95%' ml='auto' mr='auto' bottom='0' borderBottom='1px solid lightgrey' mt='3'></Box></ListItem>
                             )
-                        })}
+                        }
+                            )};
 
                     </UnorderedList>
                 </GridItem>
