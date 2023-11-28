@@ -14,7 +14,6 @@ import {
 import useSpeechSynthesis from "../../hooks/useSpeechSynthesis.jsx";
 import {useEffect, useState} from "react";
 import useSound from "use-sound";
-import startSound from "../../assets/sounds/start.mp3";
 import music1 from  "../../assets/sounds/Muti & Azer Bülbül  - İlle de Sen (Official Video).mp3";
 import music2 from  "../../assets/sounds/Burak Bulut & Yıldız Tilbe - Bambaşka Yollara.mp3";
 import music3 from  "../../assets/sounds/Mabel Matiz - Müphem.mp3";
@@ -47,8 +46,17 @@ const Home = () => {
         if(isPlayed === true)
         {
             play();
+            x.textContent = "Pause";
+
+
+
         }
-        else {pause()};
+        else {
+            pause();
+            x.textContent = "Play";
+        };
+
+
 
     };
 
@@ -107,7 +115,7 @@ const Home = () => {
                             </Button>
                             <Spacer />
                             <Button onClick={pauseButton} w='5rem'>
-                                <p id="sP">Pause</p>
+                                <p id="sP">Play</p>
                             </Button>
                             <Spacer />
                             <Button w='10rem'>
