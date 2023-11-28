@@ -102,7 +102,7 @@ const Home = () => {
 
                         {songList.map(song => {
                             return (
-                                <ListItem w='100%' onClick={() => playSong(song)}><Flex w='100%' justifyContent='flex-start' mt='5' h='120' alignItems='center'><Image borderRadius='5' w='200' h='110' objectFit="cover" mt='-1px' boxShadow='dark-lg'  src='https://i.ytimg.com/vi/C2tQrIHSXho/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCbR8sRCp1J_R4S_U2upByaU9PdUw'></Image><Text mt='-1' display='block' color='Black' fontSize='30' ml='10'>Mabel Matiz - Müphem</Text>
+                                <ListItem w='100%' onClick={() => playSong(song)}><Flex w='100%' cursor='pointer' justifyContent='flex-start' mt='5' h='120' alignItems='center'><Image borderRadius='5' w='200' h='110' objectFit="cover" mt='-1px' boxShadow='dark-lg'  src='https://i.ytimg.com/vi/C2tQrIHSXho/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCbR8sRCp1J_R4S_U2upByaU9PdUw'></Image><Text mt='-1' display='block' color='Black' fontSize='30' ml='10'>Mabel Matiz - Müphem</Text>
                                 </Flex><Box h='100%' w='95%' ml='auto' mr='auto' bottom='0' borderBottom='1px solid lightgrey' mt='3'></Box></ListItem>
                             )
                         })}
