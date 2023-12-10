@@ -7,7 +7,6 @@ import {
     ListItem,
     UnorderedList, Box, Image, Text,
 } from "@chakra-ui/react";
-import { jwtDecode } from "jwt-decode";
 import useSpeechSynthesis from "../../hooks/useSpeechSynthesis.jsx";
 import {useEffect, useState} from "react";
 import useSound from "use-sound";
@@ -27,7 +26,7 @@ export async function loader(){
 const Home = () => {
     const loaderData = useLoaderData();
     const {startSynthesis,setMessage,message,stopSynthesis} = useSpeechSynthesis("Ana Sayfaya eriştiniz. P tuşuna basarak kaldığınız yerden dinlemeye devam edebilirsiniz. Kontroller hakkında bilgi edinmek için h tuşuna basın.");
-    const [currentSongPath,setCurrentSongPath] = useState(`https://localhost:7072/${loaderData.data.musics[0].path}`);
+    const [currentSongPath,setCurrentSongPath] = useState(`https://localhost:7072/${loaderData.data.musics ? loaderData.data.musics[0].path : ''}`);
     const [isChanged, setIsChanged] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const [play,{stop,pause}] = useSound(currentSongPath);
@@ -40,7 +39,7 @@ const Home = () => {
     useEffect(()=> {
         const handleKeyDown = (e) => {
             if (e.code ==="KeyH") {
-                setMessage("Sağ ve sol ok tuşlarıyla şarkının süresini değiştirebilirisiniz, yukarı ve aşağı ok tuşuyla listenizdeki diğer şarkılara geçebilirsiniz")
+                setMessage("Sağ ve sol ok tuşlarıyla şarkının süresini değiştirebilirisiniz, yukarı ve aşağı ok tuşuyla listenizdeki diğer şarkılara geçebilirsiniz. İstediğiniz şarkıyı ismiyle sesli aramak için Control tuşuna basın")
             }else if (e.code === "KeyP"){
                 setIsPlaying(!isPlaying);
             }
@@ -73,7 +72,6 @@ const Home = () => {
 
     return (
         <Container h="100vh" maxW="container.2xl"  className="box-border">
-            <Text>Merhaba {jwtDecode(cookies.authToken).username}</Text>
             <Grid templateColumns='repeat(3, 1fr)' gap={3} pt='5' >
                 <GridItem p="10" className="h-[calc(100vh-2em)]" w='100%' bg='wihte' pt='150' border='1px solid grey' borderRadius='4'>
                     <Flex mb='20' h='50%' alignItems='center' justifyContent='space-between' gap='10'>
@@ -122,18 +120,18 @@ const Home = () => {
                 <GridItem className="h-full" colSpan={2} w='100%' bg='white' border='1px solid grey' borderRadius='4'>
                     <UnorderedList styleType='none'>
 
-                        {loaderData.data.musics.map(song=> {
+                        {loaderData.data.musics && loaderData.data.musics.map(song=> {
                             return (
-                                <ListItem key={song.id} w='100%' onClick={() => playSong(song.path)}>
-                                    <Flex w='100%' cursor='pointer' justifyContent='flex-start' mt='5' h='120' alignItems='center'>
-                                        <Image borderRadius='5' w='200' h='110' objectFit="cover" mt='-1px'  src='https://cdn-icons-png.flaticon.com/512/32/32328.png' />
-                                        <Text mt='-1' display='block' color='Black' fontSize='30' ml='10'>{song.title}</Text>
-                                    </Flex>
-                                    <Box h='100%' w='95%' ml='auto' mr='auto' bottom='0' borderBottom='1px solid lightgrey' mt='3'></Box>
-                                </ListItem>
-                            )
+                        <ListItem key={song.id} w='100%' onClick={() => playSong(song.path)}>
+                            <Flex w='100%' cursor='pointer' justifyContent='flex-start' mt='5' h='120' alignItems='center'>
+                                <Image borderRadius='5' w='200' h='110' objectFit="cover" mt='-1px'  src='https://cdn-icons-png.flaticon.com/512/32/32328.png' />
+                                <Text mt='-1' display='block' color='Black' fontSize='30' ml='10'>{song.title}</Text>
+                            </Flex>
+                            <Box h='100%' w='95%' ml='auto' mr='auto' bottom='0' borderBottom='1px solid lightgrey' mt='3'></Box>
+                        </ListItem>
+                        )
                         }
-                            )};
+                        )};
 
                     </UnorderedList>
                 </GridItem>
