@@ -8,11 +8,10 @@ import {
     UnorderedList, Box, Image, Text,
 } from "@chakra-ui/react";
 import useSpeechSynthesis from "../../hooks/useSpeechSynthesis.jsx";
-import {useEffect, useState} from "react";
-import useSound from "use-sound";
-import {useCookies} from "react-cookie";
+import {useEffect, useRef, useState} from "react";
 import axios from "axios";
-import {useLoaderData} from "react-router-dom";
+import {useLoaderData, useOutletContext} from "react-router-dom";
+import {getSongPos} from "../../helpers/helper.js";
 
 export async function loader(){
     const response = axios.get("https://localhost:7072/api/Music").then(function (response){
@@ -25,50 +24,103 @@ export async function loader(){
 }
 const Home = () => {
     const loaderData = useLoaderData();
-    const {startSynthesis,setMessage,message,stopSynthesis} = useSpeechSynthesis("Ana Sayfaya eriştiniz. P tuşuna basarak kaldığınız yerden dinlemeye devam edebilirsiniz. Kontroller hakkında bilgi edinmek için h tuşuna basın.");
-    const [currentSongPath,setCurrentSongPath] = useState(`https://localhost:7072/${loaderData.data.musics ? loaderData.data.musics[0].path : ''}`);
-    const [isChanged, setIsChanged] = useState(false);
+    const [searchVal, setSearchVal] = useOutletContext();
+    const [songs, setSongs] = useState([]);
+    const [currentSong, setCurrentSong] = useState(loaderData.data?.musics[0]);
     const [isPlaying, setIsPlaying] = useState(false);
-    const [play,{stop,pause}] = useSound(currentSongPath);
-    const [cookies] = useCookies(['authToken','tokenExpire']);
+    const audioRef = useRef(HTMLAudioElement);
+    const [duration,setDuration] = useState();
+    const {startSynthesis,setMessage,message,stopSynthesis} = useSpeechSynthesis("Ana Sayfaya eriştiniz. P tuşuna basarak kaldığınız yerden dinlemeye devam edebilirsiniz. Kontroller hakkında bilgi edinmek için h tuşuna basın.");
+
     useEffect(()=> {
         startSynthesis();
-    },[message])
+    },[message]);
 
 
-    useEffect(()=> {
-        const handleKeyDown = (e) => {
-            if (e.code ==="KeyH") {
-                setMessage("Sağ ve sol ok tuşlarıyla şarkının süresini değiştirebilirisiniz, yukarı ve aşağı ok tuşuyla listenizdeki diğer şarkılara geçebilirsiniz. İstediğiniz şarkıyı ismiyle sesli aramak için Control tuşuna basın")
-            }else if (e.code === "KeyP"){
-                setIsPlaying(!isPlaying);
-            }
-        };
-        document.addEventListener("keydown", handleKeyDown)
-        return function cleanup() {
-            document.removeEventListener('keydown', handleKeyDown);
+    useEffect(() => {
+        if (loaderData.data?.musics){
+            setSongs(loaderData.data.musics);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (isPlaying){
+            stopSynthesis();
+            audioRef.current.play();
+            setSearchVal("");
+        }else{
+            audioRef.current.pause();
         }
     },[isPlaying]);
 
     useEffect(() => {
         if (isPlaying){
-            stopSynthesis();
-            play()
+            audioRef.current.play();
         }else{
-            pause()
+            audioRef.current.pause();
         }
-    }, [isPlaying]);
+        if (!isPlaying && getSongPos(songs,currentSong.id)+1 !== 0){
+            setMessage(currentSong.title);
+        }
+    }, [currentSong]);
 
     useEffect(() => {
-        setIsChanged(true);
-    }, [currentSongPath]);
+        if (searchVal){
+            const filteredSongs = loaderData.data?.musics.filter(s => s.title.toLowerCase().includes(searchVal.toLowerCase()));
+            if (filteredSongs.length === 0){
+                setMessage(`Aradığınız ${searchVal} sorgusu ile şarkı bulunamadı lütfen tekrar aramak için ctrl tuşuna basın`)
+                setSongs(loaderData.data?.musics);
+            }else{
 
-    const playSong = (path) =>
-    {
-        setCurrentSongPath(`https://localhost:7072/${path}`)
-        stop();
-        setIsPlaying(!isPlaying)
-    };
+                setSongs(filteredSongs);
+                setCurrentSong(filteredSongs[0]);
+            }
+            document.activeElement.blur();
+        }
+    }, [searchVal]);
+
+
+    const onLoadedMetadata = ()=>{
+        const seconds = Math.floor(audioRef.current.duration);
+        setDuration(seconds);
+    }
+
+    useEffect(()=> {
+        const handleKeyDown = (e) => {
+            if (e.code === "KeyH") {
+                setMessage("Sağ ve sol ok tuşlarıyla şarkının süresini değiştirebilirisiniz, yukarı ve aşağı ok tuşuyla listenizdeki diğer şarkılara geçebilirsiniz. İstediğiniz şarkıyı ismiyle sesli aramak için Control tuşuna basın")
+            } else if (e.code === "KeyP") {
+                setIsPlaying(!isPlaying);
+            } else if (e.code === "ArrowRight") {
+                audioRef.current.currentTime += 5;
+            } else if (e.code === "ArrowLeft") {
+                audioRef.current.currentTime -= 5;
+            } else if (e.code === "ArrowDown") {
+                const pos = getSongPos(songs, currentSong.id);
+                if (pos+1 !== songs.length){
+                    setCurrentSong(songs[pos+1]);
+                }else{
+                    setCurrentSong(songs[songs.length-1]);
+                }
+                e.preventDefault();
+            } else if (e.code === "ArrowUp"){
+                const pos = getSongPos(songs, currentSong.id);
+                if (pos !== 0){
+                    setCurrentSong(songs[pos-1]);
+                }else{
+                    setCurrentSong(songs[0])
+                }
+                e.preventDefault();
+            }
+        };
+
+        document.addEventListener("keydown", handleKeyDown)
+
+        return function cleanup() {
+            document.removeEventListener('keydown', handleKeyDown);
+        }
+    });
+
 
     return (
         <Container h="100vh" maxW="container.2xl"  className="box-border">
@@ -76,26 +128,14 @@ const Home = () => {
                 <GridItem p="10" className="h-[calc(100vh-2em)]" w='100%' bg='wihte' pt='150' border='1px solid grey' borderRadius='4'>
                     <Flex mb='20' h='50%' alignItems='center' justifyContent='space-between' gap='10'>
                         <Flex direction='column'>
-                          <Image borderRadius='5' mb='10' src='https://cdn-icons-png.flaticon.com/512/32/32328.png  '>
-                          </Image>
-                        <p>Mabel Matiz - Müphem</p>
+                          <Image borderRadius='5' mb='10px' src='https://cdn-icons-png.flaticon.com/512/32/32328.png  ' />
+                        <p>{currentSong.title}</p>
                         </Flex>
                         <Center h='90%'>
-
-                            <Slider
-                                aria-label='slider-ex-3'
-                                defaultValue={30}
-                                orientation='vertical'
-                                h='100%'
-                            >
-                                <SliderTrack>
-                                    <SliderFilledTrack />
-                                </SliderTrack>
-                                <SliderThumb />
-                            </Slider>
+                            <audio preload="metadata" onLoadedMetadata={onLoadedMetadata} ref={audioRef} src={`https://localhost:7072/${currentSong?.path}`} />
                         </Center>
                     </Flex>
-                    <Slider aria-label='slider-ex-1' defaultValue={30} mt={'2'} mb={'5'}>
+                    <Slider aria-label='slider-ex-1' defaultValue={0} max={duration} mt={'2'} mb={'5'} onChange={(value) => audioRef.current.currentTime = value}>
                         <SliderTrack>
                             <SliderFilledTrack />
                         </SliderTrack>
@@ -107,7 +147,7 @@ const Home = () => {
                                 Previous Music
                             </Button>
                             <Spacer />
-                            <Button onClick={() => setIsPlaying(!isPlaying)} w='5rem'>
+                            <Button w='5rem' onClick={() => setIsPlaying(!isPlaying)}>
                                 <p>{isPlaying ? 'Pause' : 'Play'}</p>
                             </Button>
                             <Spacer />
@@ -120,9 +160,9 @@ const Home = () => {
                 <GridItem className="h-full" colSpan={2} w='100%' bg='white' border='1px solid grey' borderRadius='4'>
                     <UnorderedList styleType='none'>
 
-                        {loaderData.data.musics && loaderData.data.musics.map(song=> {
+                        {songs.map(song=> {
                             return (
-                        <ListItem key={song.id} w='100%' onClick={() => playSong(song.path)}>
+                        <ListItem key={song.id} w='100%' onClick={() => setCurrentSong(song)}>
                             <Flex w='100%' cursor='pointer' justifyContent='flex-start' mt='5' h='120' alignItems='center'>
                                 <Image borderRadius='5' w='200' h='110' objectFit="cover" mt='-1px'  src='https://cdn-icons-png.flaticon.com/512/32/32328.png' />
                                 <Text mt='-1' display='block' color='Black' fontSize='30' ml='10'>{song.title}</Text>
