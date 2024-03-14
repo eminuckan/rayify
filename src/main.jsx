@@ -16,6 +16,8 @@ import Root from "./routes/Root.jsx";
 import {action as signUpAction} from './routes/pages/Signup.jsx';
 import {action as loginAction} from './routes/pages/Login.jsx';
 import {loader as homeLoader} from './routes/pages/Home.jsx';
+import {loader as spotifyLoader} from './routes/pages/Spotify.jsx';
+import Spotify from "./routes/pages/Spotify.jsx";
 const router = createBrowserRouter([
 
     {
@@ -26,6 +28,11 @@ const router = createBrowserRouter([
                 index: true,
                 element: <Home />,
                 loader: homeLoader
+            },
+            {
+                path: "/spotify",
+                element: <Spotify />,
+                loader: spotifyLoader
             }
         ]
     },
@@ -38,7 +45,7 @@ const router = createBrowserRouter([
         path: "/sign-up",
         element: <Signup />,
         action: signUpAction
-    },
+    }
 
 
 ]);

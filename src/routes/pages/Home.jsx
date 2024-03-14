@@ -12,6 +12,7 @@ import {useEffect, useRef, useState} from "react";
 import axios from "axios";
 import {useLoaderData, useOutletContext} from "react-router-dom";
 import {getSongPos} from "../../helpers/helper.js";
+import {GoogleGenerativeAI} from "@google/generative-ai";
 
 export async function loader(){
     const response = axios.get("https://localhost:7072/api/Music").then(function (response){
@@ -22,7 +23,12 @@ export async function loader(){
 
     return response;
 }
-const Home = () => {
+
+
+const  Home = () => {
+    const genAI = new GoogleGenerativeAI(
+        "AIzaSyANfOr85IwP-LlXJGtKIDGLXEOOxSGy1u4"
+    );
     const loaderData = useLoaderData();
     const [searchVal, setSearchVal] = useOutletContext();
     const [songs, setSongs] = useState([]);
@@ -31,7 +37,22 @@ const Home = () => {
     const audioRef = useRef(HTMLAudioElement);
     const [duration,setDuration] = useState();
     const {startSynthesis,setMessage,message,stopSynthesis} = useSpeechSynthesis("Ana Sayfaya eriştiniz. P tuşuna basarak kaldığınız yerden dinlemeye devam edebilirsiniz. Kontroller hakkında bilgi edinmek için h tuşuna basın.");
+    const [apiData, setApiData] = useState();
+    const fetchData = async () => {
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const prompt = `internetten Semicenk - Eyvah Neye Yarar (Prod. By Büken) bu şarkıyı araştırıp bunun şarkıcısını ve albüm bilgisini ver, bilgi şu şekilde bir javascript objesi olsun ve olmayan bilgiler null olarak doldurulsun. Örnek çıktı şu şekilde olmalı: { "title": "Eyvah Neye Yarar", "artist": "Semicenk", "album": "null" }"
+`;
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        setApiData(text);
+    };
 
+    const handleGemini = async (e) => {
+        e.preventDefault();
+        await fetchData();
+        console.log(apiData);
+    }
     useEffect(()=> {
         startSynthesis();
     },[message]);
@@ -128,8 +149,8 @@ const Home = () => {
                 <GridItem p="10" className="h-[calc(100vh-2em)]" w='100%' bg='wihte' pt='150' border='1px solid grey' borderRadius='4'>
                     <Flex mb='20' h='50%' alignItems='center' justifyContent='space-between' gap='10'>
                         <Flex direction='column'>
-                          <Image borderRadius='5' mb='10px' src='https://cdn-icons-png.flaticon.com/512/32/32328.png  ' />
-                        <p>{currentSong.title}</p>
+                            <Image borderRadius='5' mb='10px' src='https://cdn-icons-png.flaticon.com/512/32/32328.png  ' />
+                            <p>{currentSong.title}</p>
                         </Flex>
                         <Center h='90%'>
                             <audio preload="metadata" onLoadedMetadata={onLoadedMetadata} ref={audioRef} src={`https://localhost:7072/${currentSong?.path}`} />
@@ -154,6 +175,7 @@ const Home = () => {
                             <Button w='10rem'>
                                 Next Music
                             </Button>
+                            <Button onClick={handleGemini} >Gemini</Button>
                         </Flex>
                     </Stack>
                 </GridItem>
@@ -161,16 +183,16 @@ const Home = () => {
                     <UnorderedList styleType='none'>
 
                         {songs.map(song=> {
-                            return (
-                        <ListItem key={song.id} w='100%' onClick={() => setCurrentSong(song)}>
-                            <Flex w='100%' cursor='pointer' justifyContent='flex-start' mt='5' h='120' alignItems='center'>
-                                <Image borderRadius='5' w='200' h='110' objectFit="cover" mt='-1px'  src='https://cdn-icons-png.flaticon.com/512/32/32328.png' />
-                                <Text mt='-1' display='block' color='Black' fontSize='30' ml='10'>{song.title}</Text>
-                            </Flex>
-                            <Box h='100%' w='95%' ml='auto' mr='auto' bottom='0' borderBottom='1px solid lightgrey' mt='3'></Box>
-                        </ListItem>
-                        )
-                        }
+                                return (
+                                    <ListItem key={song.id} w='100%' onClick={() => setCurrentSong(song)}>
+                                        <Flex w='100%' cursor='pointer' justifyContent='flex-start' mt='5' h='120' alignItems='center'>
+                                            <Image borderRadius='5' w='200' h='110' objectFit="cover" mt='-1px'  src='https://cdn-icons-png.flaticon.com/512/32/32328.png' />
+                                            <Text mt='-1' display='block' color='Black' fontSize='30' ml='10'>{song.title}</Text>
+                                        </Flex>
+                                        <Box h='100%' w='95%' ml='auto' mr='auto' bottom='0' borderBottom='1px solid lightgrey' mt='3'></Box>
+                                    </ListItem>
+                                )
+                            }
                         )};
 
                     </UnorderedList>

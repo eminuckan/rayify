@@ -24,15 +24,19 @@ export default function Root() {
 
     let token;
    const handleToken = () => {
+        if(cookies.authToken){
+            if (cookies.authToken !== ""){
+                token = jwtDecode(cookies.authToken);
+                if (Date.now() >= token.exp*1000){
+                    return false;
+                }else return token !== "";
+            }else{
+                return false;
+            }
+        }else{
+            return false;
+        }
 
-       if (cookies.authToken !== ""){
-           token = jwtDecode(cookies.authToken);
-           if (Date.now() >= token.exp*1000){
-               return false;
-           }else return token !== "";
-       }else{
-           return false;
-       }
    }
 
 
@@ -62,14 +66,15 @@ export default function Root() {
         setUsername(token.username);
     })
     return <>
-        <Container maxW={'100%'} padding={'2'}>
+        <Container maxW={'100%'} padding={'10'}>
             <Flex justifyContent='space-between' width={'100%'} gap={100}>
                 <Input placeholder='...' type='text' size='md' ref={searchRef} htmlSize={10}/>
                 <Text width='400px'>{username ? `Merhaba ${username}`:''}</Text>
                 <Button colorScheme='gray' border='1px solid black' onClick={() => setCookie('authToken',"")}>Çıkış Yap</Button>
             </Flex>
+            {(handleToken(token) ? <Outlet context={[searchVal,setSearchVal]} /> : <Navigate to={'/login'} />)}
         </Container>
-        {(handleToken(token) ? <Outlet context={[searchVal,setSearchVal]} /> : <Navigate to={'/login'} />)}
+
     </>
 
 }
